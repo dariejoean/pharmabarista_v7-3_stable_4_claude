@@ -58,11 +58,13 @@ export const useAppController = () => {
 
   const basketsSetting = useLiveQuery(() => db.settings.get('baskets_list'));
   const basketsList = (basketsSetting?.value as ListItem[]) || [];
+  const langSetting = useLiveQuery(() => db.settings.get('app_language'));
+  const appLanguage = ((langSetting?.value as 'ro' | 'en') || 'ro');
 
   // --- CUSTOM HOOKS INTEGRATION ---
   const theme = useTheme();
   // Editor Hook logic
-  const editorLogic = useShotEditor(savedMachines, savedBeans, tampersList, engineMode);
+  const editorLogic = useShotEditor(savedMachines, savedBeans, tampersList, engineMode, appLanguage);
   
   // Store actions
   const setTags = useEditorStore(s => s.setTags);

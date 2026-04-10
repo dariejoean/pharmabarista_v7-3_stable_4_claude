@@ -256,18 +256,22 @@ export const useShotEditor = (
         try {
             let result: ExpertAnalysisResult | string;
 
-            if (engineMode === 'expert') {
-                await new Promise(r => setTimeout(r, 800)); 
-                result = evaluateShotLocally(currentShot);
-            } else {
-                // Manual mode - no automatic analysis
-                result = {
-                    score: "N/A",
-                    diagnosis: "Mod Manual - Nu s-a efectuat analiza automată.",
-                    suggestion: "Ajustează parametrii conform propriilor observații."
-                };
-            }
-
+                            if (engineMode === 'expert') {
+                                                    // Expert mode: call Gemini AI via secure Vercel serverless proxy
+                                                    const geminiResponse = await fetch('/api/gemini', {
+                                                                                method: 'POST',
+                                                                                headers: { 'Content-Type': 'application/json' },
+                                                                                body: JSON.stringify({ ...currentShot, images: undefined, thumbnails: undefined })
+                                                        });
+                                                    if (!geminiResponse.ok) {
+                                                                                const errData = await geminiResponse.json().catch(() => ({}));
+                                                                                throw new Error(errData?.diagnosis || `Eroare Gemini API: HTTP ${geminiResponse.status}`);
+                                                    }
+                                                    result = await geminiResponse.json();
+                            } else {
+                                                    // Manual mode: local deterministic Expert System (offline, instant)
+                                                    result = evaluateShotLocally(currentShot);
+                            }
             if (!isMounted.current) return;
             
             const finalShot = { ...currentShot };

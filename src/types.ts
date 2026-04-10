@@ -222,6 +222,17 @@ export interface SavedAnalysis {
     expertReport: string;
 }
 
+// --- GEMINI SHOT ANALYSIS (per-shot AI history + cache) ---
+export interface GeminiShotAnalysis {
+  id?: number;
+  shotId: string;
+  date: string;
+  shotHash: string;
+  language: 'ro' | 'en';
+  result: ExpertAnalysisResult;
+}
+// -----------------------------------------------------------
+
 export interface CustomThemeColors {
     surface: string;
     surfaceContainer: string;

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { saveShot, getAllSettings, saveSettings, getSetting } from '../services/db';
+import { saveShot, getAllSettings, saveSettings, getSetting, saveGeminiAnalysis, getGeminiAnalysisByHash } from '../services/db';
 import { evaluateShotLocally } from '../services/expertSystem';
 import { createThumbnail } from '../utils/imageUtils';
 import { ShotData, ExpertAnalysisResult, ProductItem, ListItem } from '../types';
@@ -8,12 +8,14 @@ import { useEditorStore } from '../store/editorStore';
 import { formatGrindSetting } from '../utils/shotUtils';
 
 import { useIsMounted } from './useIsMounted';
+import { computeShotHash } from '../utils/shotHash';
 
 export const useShotEditor = (
     savedMachines: ProductItem[], 
     savedBeans: ProductItem[],
     tampersList: ListItem[],
-    engineMode: 'expert' | 'manual'
+    engineMode: 'expert' | 'manual',
+    language: 'ro' | 'en' = 'ro'
 ) => {
     // Access State via Store
     const store = useEditorStore();
@@ -253,6 +255,24 @@ export const useShotEditor = (
             ...extraData 
         };
 
+        // Feature 5: Smart cache — skip Gemini API if shot params haven't changed
+        const shotHash = computeShotHash(currentShot);
+        const cached = await getGeminiAnalysisByHash(shotHash);
+        if (cached) {
+          if (isMounted.current) {
+            setExpertResult(cached.result);
+            const finalShotCached = { ...currentShot };
+            finalShotCached.structuredAnalysis = cached.result;
+            finalShotCached.expertAdvice = cached.result.suggestion;
+            await saveShot(finalShotCached);
+            if (onSuccess) onSuccess(finalShotCached);
+            store.setIsExtracting(false);
+            store.resetForm(false);
+          }
+          return;
+        }
+
+
         try {
             let result: ExpertAnalysisResult | string;
 
@@ -261,13 +281,21 @@ export const useShotEditor = (
                                                     const geminiResponse = await fetch('/api/gemini', {
                                                                                 method: 'POST',
                                                                                 headers: { 'Content-Type': 'application/json' },
-                                                                                body: JSON.stringify({ ...currentShot, images: undefined, thumbnails: undefined })
+                                                                                body: JSON.stringify({ ...currentShot, images: undefined, thumbnails: undefined, language })
                                                         });
                                                     if (!geminiResponse.ok) {
                                                                                 const errData = await geminiResponse.json().catch(() => ({}));
                                                                                 throw new Error(errData?.diagnosis || `Eroare Gemini API: HTTP ${geminiResponse.status}`);
                                                     }
                                                     result = await geminiResponse.json();
+                                                    // Feature 1: Save to Gemini history (IndexedDB cache)
+                                                    saveGeminiAnalysis({
+                                                      shotId: currentShot.id || '',
+                                                      date: new Date().toISOString(),
+                                                      shotHash,
+                                                      language,
+                                                      result: result as ExpertAnalysisResult,
+                                                    }).catch(() => {});
                             } else {
                                                     // Manual mode: local deterministic Expert System (offline, instant)
                                                     result = evaluateShotLocally(currentShot);

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
     SECTION_HEADER_STYLE, 
     getDynamicSectionHeaderStyle,
@@ -9,6 +9,7 @@ import { ShotData } from '../types';
 import { HistoryList } from '../components/HistoryList';
 import { StandardExtractionBox } from '../components/StandardExtractionBox';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ShotComparisonView } from './ShotComparisonView';
 import { useHistoryLogic } from '../hooks/useHistoryLogic';
 import { getReconstructedTimes } from '../utils/shotUtils';
 import { 
@@ -45,6 +46,7 @@ const SORT_CONFIG = [
 export const HistoryView: React.FC<HistoryViewProps> = React.memo(({ shots, onDeleteShot, onViewShot, onOpenAnalysis }) => {
     
     const logic = useHistoryLogic(shots);
+    const [showComparison, setShowComparison] = useState(false);
 
     // Helpers
     const formatDate = (isoString: string) => {
@@ -230,7 +232,15 @@ export const HistoryView: React.FC<HistoryViewProps> = React.memo(({ shots, onDe
                 <button onClick={onOpenAnalysis} className="w-full py-4 bg-indigo-600 text-white rounded-full font-bold text-sm uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-[0_8px_20px_rgba(79,70,229,0.4)] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 active:shadow-inner border border-white/10 flex items-center justify-center gap-2 group">
                     <ChartPieIcon className="w-5 h-5 drop-shadow-md group-hover:scale-110 transition-transform" /> <span>ANALIZE EXTRACȚII</span>
                 </button>
+                <button
+                    onClick={() => setShowComparison(prev => !prev)}
+                    className={`w-full py-4 rounded-full font-bold text-sm uppercase tracking-widest transition-all active:scale-95 border border-white/10 flex items-center justify-center gap-2 group ${showComparison ? 'bg-amber-600 text-white shadow-[0_8px_20px_rgba(217,119,6,0.4)]' : 'bg-surface-container text-on-surface hover:bg-surface-container-high shadow-md'}`}
+                >
+                    <ArrowRightIcon className="w-5 h-5 drop-shadow-md group-hover:scale-110 transition-transform" />
+                    <span>{showComparison ? 'ÎNCHIDE COMPARARE' : 'COMPARARE SHOT-URI'}</span>
+                </button>
             </div>
+            {showComparison && <ShotComparisonView />}
 
             {logic.latestShot && !isFilterActive && (
                 <>

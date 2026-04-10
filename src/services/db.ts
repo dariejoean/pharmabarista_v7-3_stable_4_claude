@@ -367,3 +367,5 @@ export const getAllSettings = async (): Promise<UserSettings> => {
     return {};
   }
 };
+
+export const getAllShots = (): Promise<ShotData[]> => db.shots.toArray();

@@ -286,7 +286,7 @@ export const useShotEditor = (
 
         } catch (e) { 
             if (isMounted.current) { 
-                setErrorMsg("Eroare neașteptată la salvare."); 
+                const msg = e instanceof Error ? e.message : "Eroare neașteptată la salvare.";                setErrorMsg(msg); 
                 console.error(e); 
             } 
         } finally { 

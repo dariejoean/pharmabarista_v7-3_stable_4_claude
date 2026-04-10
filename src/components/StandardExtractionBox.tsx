@@ -7,6 +7,7 @@ import { EditableSelectionRow } from './EditableSelectionRow';
 import { EditableGrindSettingRow } from './EditableGrindSettingRow';
 import { getReconstructedTimes, formatGrindSetting } from '../utils/shotUtils';
 import { SparklesIcon, DocumentTextIcon, PencilSquareIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { exportAnalysisToPdf } from '../utils/exportPdf';
 import { BOX_STYLE, LABEL_STYLE, VALUE_WRAPPER_STYLE } from '../styles/common';
 
 interface StandardExtractionBoxProps {
@@ -224,11 +225,26 @@ export const StandardExtractionBox: React.FC<StandardExtractionBoxProps> = ({ sh
             {/* Expert Analysis, Observations, Notes */}
             {localShot.structuredAnalysis && (
                 <div className="bg-surface-container rounded-2xl p-4 border border-white/5 shadow-md">
-                    <div className="flex items-center gap-2 mb-3">
-                        <SparklesIcon className="w-4 h-4 text-on-surface-variant" />
-                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">ANALIZĂ EXPERT</span>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                            <SparklesIcon className="w-4 h-4 text-amber-400" />
+                            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">ANALIZĂ EXPERT</span>
+                        </div>
+                        {localShot.structuredAnalysis.score && (
+                            <span className="text-xl font-black text-amber-400 drop-shadow-sm">{localShot.structuredAnalysis.score}</span>
+                        )}
                     </div>
-                    <p className="text-sm font-medium text-on-surface">{localShot.structuredAnalysis.diagnosis}</p>
+                    <p className="text-sm font-medium text-on-surface mb-3">{localShot.structuredAnalysis.diagnosis}</p>
+                    {localShot.structuredAnalysis.suggestion && (
+                        <p className="text-xs text-on-surface-variant mb-4 leading-relaxed border-t border-white/5 pt-3">{localShot.structuredAnalysis.suggestion}</p>
+                    )}
+                    <button
+                        onClick={() => exportAnalysisToPdf(localShot.structuredAnalysis!, localShot)}
+                        className="w-full py-3 bg-amber-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-amber-500 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                    >
+                        <DocumentTextIcon className="w-4 h-4" />
+                        EXPORT PDF ANALIZĂ
+                    </button>
                 </div>
             )}
             <div className="bg-surface-container rounded-2xl p-4 border border-white/5 shadow-md">

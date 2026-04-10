@@ -27,9 +27,9 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests and AI APIs
+  // Skip cross-origin requests, AI APIs, and local serverless API routes
   if (!event.request.url.startsWith(self.location.origin) || 
-      event.request.url.includes('generativelanguage.googleapis.com')) {
+      event.request.url.includes('generativelanguage.googleapis.com') ||    event.request.url.includes('/api/')) {
     return;
   }
 

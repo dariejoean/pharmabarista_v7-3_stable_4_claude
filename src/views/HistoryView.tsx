@@ -10,6 +10,7 @@ import { HistoryList } from '../components/HistoryList';
 import { StandardExtractionBox } from '../components/StandardExtractionBox';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ShotComparisonView } from './ShotComparisonView';
+import { GeminiHistoryPanel } from '../components/GeminiHistoryPanel';
 import { useHistoryLogic } from '../hooks/useHistoryLogic';
 import { getReconstructedTimes } from '../utils/shotUtils';
 import { 
@@ -47,6 +48,7 @@ export const HistoryView: React.FC<HistoryViewProps> = React.memo(({ shots, onDe
     
     const logic = useHistoryLogic(shots);
     const [showComparison, setShowComparison] = useState(false);
+    const [showGeminiHistory, setShowGeminiHistory] = useState(false);
 
     // Helpers
     const formatDate = (isoString: string) => {
@@ -241,6 +243,18 @@ export const HistoryView: React.FC<HistoryViewProps> = React.memo(({ shots, onDe
                 </button>
             </div>
             {showComparison && <ShotComparisonView />}
+                <button
+                    onClick={() => setShowGeminiHistory(prev => !prev)}
+                    className={`w-full py-4 rounded-full font-bold text-sm uppercase tracking-widest transition-all active:scale-95 border border-white/10 flex items-center justify-center gap-2 group ${showGeminiHistory ? 'bg-purple-600 text-white shadow-[0_8px_20px_rgba(147,51,234,0.4)]' : 'bg-surface-container text-on-surface hover:bg-surface-container-high shadow-md'}`}
+                >
+                    <SparklesIcon className="w-5 h-5 drop-shadow-md group-hover:scale-110 transition-transform" />
+                    <span>{showGeminiHistory ? 'ÎNCHIDE ISTORIC AI' : 'ISTORIC ANALIZE AI'}</span>
+                </button>
+            {showGeminiHistory && (
+                <div className="mt-2">
+                    <GeminiHistoryPanel />
+                </div>
+            )}
 
             {logic.latestShot && !isFilterActive && (
                 <>
